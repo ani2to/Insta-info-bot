@@ -32,7 +32,7 @@ def can_make_request(user_id):
     current_time = time.time()
     if user_id in user_last_request:
         last_request_time = user_last_request[user_id]
-        if current_time - last_request_time < 10:
+        if current_time - last_request_time < 1:
             return False
     user_last_request[user_id] = current_time
     return True
@@ -432,9 +432,6 @@ def stats_command(message):
 
 👥 Total Users: {total_users}
 👤 Active Users (30 days): {active_users}
-
-🏆 Top 5 Users:
-{top_users_text}
 
 👨‍💻 Admin: #𝐒𝐏</>
 🆔 Admin ID: {ADMIN_ID}
