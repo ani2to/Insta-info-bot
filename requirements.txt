@@ -1,0 +1,6 @@
+pyTelegramBotAPI==4.19.0
+requests==2.31.0
+Flask==3.0.0
+pymongo==4.6.0
+python-dotenv==1.0.0
+user-agent==0.1.10
