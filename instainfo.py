@@ -14,6 +14,7 @@ load_dotenv()
 
 token = os.getenv('BOT_TOKEN')
 MONGODB_URL = os.getenv('MONGODB_URL')
+INSTAGRAM_INFO_API = os.getenv('INSTAGRAM_INFO_API')
 
 CHANNEL_1 = '@Aniredirect'
 CHANNEL_2 = '@SPBotz'
@@ -113,89 +114,42 @@ def show_loading_animation(chat_id, username, loading_msg_id):
         except:
             pass
         time.sleep(0.3)
-
+        
 def fetch_instagram_data(username):
-    try:
-        cookies = {
-            'mid': 'aLwkRQABAAGr1Z4Afmt8o5rJiUnt',
-            'datr': 'RSS8aI947eeFICnGkp3xIIzK',
-            'ig_did': '823C3C9E-623F-423B-BEF0-5B0D72A3D199',
-            'ig_nrcb': '1',
-            'ps_l': '1',
-            'ps_n': '1',
-            'csrftoken': 'VsdxeWIk3PhIGgOgpbgL1SoDAjDvqbcG',
-            'ds_user_id': '76624094065',
-            'dpr': '3.0234789848327637',
-            'wd': '891x1671',
-        }
-        
-        headers = {
-            'authority': 'www.instagram.com',
-            'accept': '*/*',
-            'accept-language': 'ar-EG,ar;q=0.9,en-US;q=0.8,en;q=0.7',
-            'referer': f'https://www.instagram.com/{username}/',
-            'sec-ch-prefers-color-scheme': 'dark',
-            'sec-ch-ua': '"Chromium";v="137", "Not/A)Brand";v="24"',
-            'sec-ch-ua-full-version-list': '"Chromium";v="137.0.7337.0", "Not/A)Brand";v="24.0.0.0"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-model': '""',
-            'sec-ch-ua-platform': '"Linux"',
-            'sec-ch-ua-platform-version': '""',
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'same-origin',
-            'user-agent': str(generate_user_agent()),
-            'x-asbd-id': '359341',
-            'x-csrftoken': 'VsdxeWIk3PhIGgOgpbgL1SoDAjDvqbcG',
-            'x-ig-app-id': '936619743392459',
-            'x-ig-www-claim': '0',
-            'x-requested-with': 'XMLHttpRequest',
-            'x-web-session-id': 'c0cybr:dl9eaj:60f3fq',
-        }
-        
-        params = {'username': username}
-        
-        response = requests.get(
-            'https://www.instagram.com/api/v1/users/web_profile_info/',
-            params=params,
-            cookies=cookies,
-            headers=headers,
-            timeout=30
-        )
-        
-        if response.status_code != 200:
-            return {"error": f"API returned status code {response.status_code}"}
-        
-        data = response.json()
-        
-        if 'data' not in data or 'user' not in data['data']:
-            return {"error": "User not found or account is private"}
-        
-        user_data = data['data']['user']
-        
-        profile_pic_url = user_data.get('profile_pic_url_hd') or user_data.get('profile_pic_url')
-        
-        result = {
-            'profile_pic_url': profile_pic_url,
-            'username': username,
-            'name': user_data.get('full_name', 'N/A'),
-            'bio': user_data.get('biography', 'No bio'),
-            'user_id': user_data.get('id', 'N/A'),
-            'followers': user_data.get('edge_followed_by', {}).get('count', 0),
-            'following': user_data.get('edge_follow', {}).get('count', 0),
-            'posts': user_data.get('edge_owner_to_timeline_media', {}).get('count', 0),
-            'is_private': user_data.get('is_private', False),
-            'is_verified': user_data.get('is_verified', False),
-            'is_business': user_data.get('is_business_account', False),
-            'success': True
-        }
-        
-        return result
-        
-    except requests.exceptions.RequestException as e:
-        return {"error": f"Network error: {str(e)}"}
-    except Exception as e:
-        return {"error": f"Unexpected error: {str(e)}"}
+    if not INSTAGRAM_INFO_API:
+        return {"success": False}
+
+    url = f"{INSTAGRAM_INFO_API}{username}"
+
+    for _ in range(2):
+        try:
+            response = requests.get(url, timeout=30)
+            if response.status_code != 200:
+                raise Exception()
+
+            data = response.json()
+            if not data or "username" not in data:
+                raise Exception()
+
+            return {
+                'profile_pic_url': data.get('profile_image'),
+                'username': data.get('username'),
+                'name': data.get('full_name', 'N/A'),
+                'bio': data.get('bio', 'No bio'),
+                'user_id': data.get('id', 'N/A'),
+                'followers': data.get('followers', 0),
+                'following': data.get('following', 0),
+                'posts': 0,
+                'is_private': data.get('is_private', False),
+                'is_verified': data.get('is_verified', False),
+                'is_business': False,
+                'success': True
+            }
+
+        except:
+            time.sleep(1)
+
+    return {"success": False}
 
 @bot.message_handler(commands=['start'])
 def start(message):
