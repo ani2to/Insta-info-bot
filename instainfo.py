@@ -29,6 +29,34 @@ users_collection = db.users
 
 user_last_request = {}
 
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.224 Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Origin": "https://usesir-ig-info.vercel.app",
+    "Referer": "https://usesir-ig-info.vercel.app/",
+    "DNT": "1",
+    "Sec-GPC": "1",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-site",
+    "Sec-CH-UA": '"Chromium";v="120", "Google Chrome";v="120", "Not=A?Brand";v="99"',
+    "Sec-CH-UA-Mobile": "?0",
+    "Sec-CH-UA-Platform": '"Windows"',
+    "Sec-CH-UA-Platform-Version": '"10.0.0"',
+    "Sec-CH-UA-Arch": '"x86"',
+    "Sec-CH-UA-Bitness": '"64"',
+    "Sec-CH-UA-Full-Version": '"120.0.6099.224"',
+    "Sec-CH-UA-Full-Version-List": '"Chromium";v="120.0.6099.224", "Google Chrome";v="120.0.6099.224", "Not=A?Brand";v="99.0.0.0"',
+    "Viewport-Width": "1920",
+    "DPR": "1.25",
+    "Priority": "u=1, i",
+    "TE": "trailers",
+    "X-Requested-With": "XMLHttpRequest"
+}
+
 def can_make_request(user_id):
     current_time = time.time()
     if user_id in user_last_request:
@@ -123,7 +151,7 @@ def fetch_instagram_data(username):
 
     for _ in range(2):
         try:
-            response = requests.get(url, timeout=30)
+            response = requests.get(url, headers=HEADERS, timeout=30)
             if response.status_code != 200:
                 raise Exception()
 
