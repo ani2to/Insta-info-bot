@@ -33,7 +33,7 @@ def can_make_request(user_id):
     current_time = time.time()
     if user_id in user_last_request:
         last_request_time = user_last_request[user_id]
-        if current_time - last_request_time < 1:
+        if current_time - last_request_time < 10:
             return False
     user_last_request[user_id] = current_time
     return True
@@ -127,22 +127,25 @@ def fetch_instagram_data(username):
             if response.status_code != 200:
                 raise Exception()
 
-            data = response.json()
-            if not data or "username" not in data:
-                raise Exception()
+            raw = response.json()
+            data = raw.get("data", {})
 
             return {
-                'profile_pic_url': data.get('profile_image'),
+                'profile_pic_url': data.get('profile_image_hd'),
                 'username': data.get('username'),
                 'name': data.get('full_name', 'N/A'),
                 'bio': data.get('bio', 'No bio'),
                 'user_id': data.get('id', 'N/A'),
                 'followers': data.get('followers', 0),
                 'following': data.get('following', 0),
-                'posts': 0,
+                'posts': data.get('posts', 0),
                 'is_private': data.get('is_private', False),
                 'is_verified': data.get('is_verified', False),
-                'is_business': False,
+                'is_business': data.get('is_business_account', False),
+                'is_professional': data.get('is_professional_account', False),
+                'is_new': data.get('is_new_to_instagram', False),
+                'meta_verified_eligible': data.get('is_eligible_for_meta_verified_label', False),
+                'account_created_year': data.get('account_created_year'),
                 'success': True
             }
 
@@ -292,17 +295,17 @@ def process_username(message):
     
     update_user_activity(user_id)
     
+    bio_text = data['bio']
+    followers_formatted = f"{data['followers']:,}"
+    following_formatted = f"{data['following']:,}"
+    posts_formatted = f"{data['posts']:,}"
+    
     private_emoji = "✅" if data['is_private'] else "❌"
     verified_emoji = "✅" if data['is_verified'] else "❌"
     business_emoji = "✅" if data['is_business'] else "❌"
-    
-    bio_text = data['bio']
-    if len(bio_text) > 150:
-        bio_text = bio_text[:150] + "..."
-    
-    followers_formatted = "{:,}".format(data['followers'])
-    following_formatted = "{:,}".format(data['following'])
-    posts_formatted = "{:,}".format(data['posts'])
+    professional_emoji = "✅" if data['is_professional'] else "❌"
+    new_emoji = "✅" if data['is_new'] else "❌"
+    meta_verified_emoji = "✅" if data['meta_verified_eligible'] else "❌"
     
     caption = f"""📊 Info for @{username}
 
@@ -316,10 +319,14 @@ def process_username(message):
 🔒 Private: {private_emoji}
 ✅ Verified: {verified_emoji}
 💼 Business Acc: {business_emoji}
+👨‍💻 Professional Acc: {professional_emoji}
+🆕 New to Instagram: {new_emoji}
+🔷 Meta Verified Eligible: {meta_verified_emoji}
+📅 Account Created Year: {data['account_created_year']}
+
 🔗 Link: https://instagram.com/{username}
 
 🤖 BY - @SudeepHu"""
-
     try:
         if data['profile_pic_url']:
             img_response = requests.get(data['profile_pic_url'], timeout=10)
@@ -432,3 +439,4 @@ if __name__ == "__main__":
     
     print("🚀 insta info Bot...")
     run_bot()
+        
