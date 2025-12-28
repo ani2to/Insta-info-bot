@@ -242,23 +242,29 @@ Then send: instagram
 @bot.message_handler(commands=['check'])
 def check_command(message):
     user_id = message.from_user.id
-    
     if not check_membership(user_id):
         markup = types.InlineKeyboardMarkup()
-        channel1_btn = types.InlineKeyboardButton("📢 Channel 1", url=f"https://t.me/{CHANNEL_1[1:]}")
-        channel2_btn = types.InlineKeyboardButton("🤖 Channel 2", url=f"https://t.me/{CHANNEL_2[1:]}")
-        check_btn = types.InlineKeyboardButton("✅ Verify", callback_data="check_membership")
+        channel1_btn = types.InlineKeyboardButton(
+            "📢 Channel 1", url=f"https://t.me/{CHANNEL_1[1:]}"
+        )
+        channel2_btn = types.InlineKeyboardButton(
+            "🤖 Channel 2", url=f"https://t.me/{CHANNEL_2[1:]}"
+        )
+        check_btn = types.InlineKeyboardButton(
+            "✅ Verify", callback_data="check_membership"
+        )
         markup.add(channel1_btn, channel2_btn)
         markup.add(check_btn)
-        
-        bot.send_message(message.chat.id, "❌ Please join both channels first to use this bot!", reply_markup=markup)
+        bot.send_message(
+            message.chat.id,
+            "❌ Please join both channels first to use this bot!",
+            reply_markup=markup
+        )
         return
-    
-    if not can_make_request(user_id):
-        bot.send_message(message.chat.id, "⏳ Please wait 10 seconds before making another request!")
-        return
-    
-    msg = bot.send_message(message.chat.id, "👤 Please send me the Instagram username (without @):")
+    msg = bot.send_message(
+        message.chat.id,
+        "👤 Please send me the Instagram username (without @):"
+    )
     bot.register_next_step_handler(msg, process_username)
 
 def process_username(message):
@@ -439,4 +445,4 @@ if __name__ == "__main__":
     
     print("🚀 insta info Bot...")
     run_bot()
-        
+            
