@@ -123,7 +123,7 @@ def fetch_instagram_data(username):
 
     for _ in range(2):
         try:
-            response = requests.get(url, timeout=30)
+            response = requests.get(url, timeout=(5, 15))
             if response.status_code != 200:
                 raise Exception()
 
@@ -282,12 +282,14 @@ def process_username(message):
     
     loading_msg = bot.send_message(message.chat.id, "🔄 Starting process...")
     
-    loading_thread = Thread(target=show_loading_animation, args=(message.chat.id, username, loading_msg.message_id))
+    loading_thread = Thread(
+    target=show_loading_animation,
+    args=(message.chat.id, username, loading_msg.message_id),
+    daemon=True
+    )
     loading_thread.start()
     
     data = fetch_instagram_data(username)
-    
-    loading_thread.join()
     
     try:
         bot.delete_message(message.chat.id, loading_msg.message_id)
@@ -301,19 +303,19 @@ def process_username(message):
     
     update_user_activity(user_id)
     
-    bio_text = data['bio']
-    followers_formatted = f"{data['followers']:,}"
-    following_formatted = f"{data['following']:,}"
-    posts_formatted = f"{data['posts']:,}"
+    bio_text = data.get('bio') or "No bio"
+    followers_formatted = f"{(data.get('followers') or 0):,}"
+    following_formatted = f"{(data.get('following') or 0):,}"
+    posts_formatted = f"{(data.get('posts') or 0):,}"
     
-    private_emoji = "✅" if data['is_private'] else "❌"
-    verified_emoji = "✅" if data['is_verified'] else "❌"
-    business_emoji = "✅" if data['is_business'] else "❌"
-    professional_emoji = "✅" if data['is_professional'] else "❌"
-    new_emoji = "✅" if data['is_new'] else "❌"
-    meta_verified_emoji = "✅" if data['meta_verified_eligible'] else "❌"
+    private_emoji = "✅" if data.get('is_private') else "❌"
+    verified_emoji = "✅" if data.get('is_verified') else "❌"
+    business_emoji = "✅" if data.get('is_business') else "❌"
+    professional_emoji = "✅" if data.get('is_professional') else "❌"
+    new_emoji = "✅" if data.get('is_new') else "❌"
+    meta_verified_emoji = "✅" if data.get('meta_verified_eligible') else "❌"
     
-    caption = f"""📊 Info for @{username}
+      caption = f"""📊 Info for @{username}
 
 👤 Username: @{username}
 📛 Name: {data['name']}
@@ -445,4 +447,3 @@ if __name__ == "__main__":
     
     print("🚀 insta info Bot...")
     run_bot()
-            
