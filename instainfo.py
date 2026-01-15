@@ -315,7 +315,7 @@ def process_username(message):
     new_emoji = "✅" if data.get('is_new') else "❌"
     meta_verified_emoji = "✅" if data.get('meta_verified_eligible') else "❌"
     
-      caption = f"""📊 Info for @{username}
+    caption = f"""📊 Info for @{username}
 
 👤 Username: @{username}
 📛 Name: {data['name']}
